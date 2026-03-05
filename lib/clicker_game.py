@@ -86,9 +86,7 @@ class ClickerGame:
                 self.upgrade_costs[i] = int(self.upgrade_costs[i] * 1.5)
 
         self.cps = sum(self.upgrades[i] * self.upgrade_cps[i] for i in range(3))
-        self.total_multiplier = self.calculate_multiplier()
 
-        self.last_time = time.monotonic()
         self.current_screen = 0
         self.pet_scroll = 0
         self.combo = 0
@@ -98,6 +96,9 @@ class ClickerGame:
         self.golden_click_time = 0
         self.last_golden_check = time.monotonic()
         self.last_pull_result = None
+
+        self.total_multiplier = self.calculate_multiplier()
+        self.last_time = time.monotonic()
 
     def calculate_multiplier(self):
         mult = 1.0 + (self.rebirths * 0.5)
