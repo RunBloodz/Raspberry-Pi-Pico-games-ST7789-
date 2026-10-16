@@ -38,7 +38,7 @@ class ZombieShooterGame:
             self.damage = 1 + self.pet_bonuses.get("dmg", 0)
             self.fire_rate = 0.5 * self.pet_bonuses.get("rate_mult", 1.0)
         self.bullet_speed = 5
-        self.move_speed = 6 + self.pet_bonuses.get("speed", 0)
+        self.move_speed = 10 + self.pet_bonuses.get("speed", 0)
         self.game_over = False
         self.show_menu = False
         self.zombies = []

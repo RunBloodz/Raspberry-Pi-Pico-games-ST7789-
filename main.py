@@ -82,6 +82,7 @@ def main():
 
     last_states = [True] * 9
     last_save_time = time.monotonic()
+    last_move_time = 0.0
 
     while True:
         curr_time = time.monotonic()
@@ -141,10 +142,13 @@ def main():
         if current_game == "clicker": clicker.update()
         elif current_game == "zombie":
             if not zombie.show_menu and not zombie.game_over:
-                if not btns[2].value: zombie.move_up()
-                if not btns[3].value: zombie.move_down()
-                if not btns[4].value: zombie.move_left()
-                if not btns[5].value: zombie.move_right()
+                if curr_time - last_move_time >= 0.5:
+                    moved = False
+                    if not btns[2].value: zombie.move_up(); moved = True
+                    if not btns[3].value: zombie.move_down(); moved = True
+                    if not btns[4].value: zombie.move_left(); moved = True
+                    if not btns[5].value: zombie.move_right(); moved = True
+                    if moved: last_move_time = curr_time
             zombie.update()
             zombie.render()
 
