@@ -5,19 +5,19 @@ import terminalio
 from adafruit_display_text import label
 
 class ZombieShooterGame:
-    def __init__(self, display, owned_pets=None):
+    def __init__(self, display, owned_pets=None, state=None):
         self.display = display
         self.owned_pets = owned_pets if owned_pets else []
 
         self.player_x = 120
         self.player_y = 120
         self.player_health = 100
-        self.max_health = 100
-        self.score = 0
-        self.money = 0
+        self.max_health = 100 if not state else state.get("upgrades", {}).get("max_hp", 100)
+        self.score = 0 if not state else state.get("score", 0)
+        self.money = 0 if not state else state.get("money", 0)
         self.ammo = 30
         self.max_ammo = 50
-        self.day = 1
+        self.day = 1 if not state else state.get("day", 1)
         self.wave = 0
         self.wave_active = False
         self.is_night = False
@@ -31,10 +31,14 @@ class ZombieShooterGame:
         self.last_shot = 0
 
         self.pet_bonuses = self._calculate_pet_bonuses()
-        self.damage = 1 + self.pet_bonuses.get("dmg", 0)
-        self.fire_rate = 0.5 * self.pet_bonuses.get("rate_mult", 1.0)
+        if state and "upgrades" in state:
+            self.damage = state["upgrades"].get("damage", 1 + self.pet_bonuses.get("dmg", 0))
+            self.fire_rate = state["upgrades"].get("fire_rate", 0.5 * self.pet_bonuses.get("rate_mult", 1.0))
+        else:
+            self.damage = 1 + self.pet_bonuses.get("dmg", 0)
+            self.fire_rate = 0.5 * self.pet_bonuses.get("rate_mult", 1.0)
         self.bullet_speed = 5
-        self.move_speed = 3 + self.pet_bonuses.get("speed", 0)
+        self.move_speed = 6 + self.pet_bonuses.get("speed", 0)
         self.game_over = False
         self.show_menu = False
         self.zombies = []
@@ -170,8 +174,10 @@ class ZombieShooterGame:
             elif k == "fire_rate": self.fire_rate *= 0.9
             self.upgrade_costs[k] = int(c*1.5); self.toggle_menu(); self.toggle_menu()
 
-    def move_up(self): self.player_y -= self.move_speed
-    def move_down(self): self.player_y += self.move_speed
-    def move_left(self): self.player_x -= self.move_speed
-    def move_right(self): self.player_x += self.move_speed
-    def restart(self): self.__init__(self.display, self.owned_pets)
+    def move_up(self): self.player_y = max(10, self.player_y - self.move_speed)
+    def move_down(self): self.player_y = min(230, self.player_y + self.move_speed)
+    def move_left(self): self.player_x = max(10, self.player_x - self.move_speed)
+    def move_right(self): self.player_x = min(230, self.player_x + self.move_speed)
+    def restart(self):
+        self.__init__(self.display, self.owned_pets)
+        self.display.root_group = self.root_group

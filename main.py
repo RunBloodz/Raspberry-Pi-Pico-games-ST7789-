@@ -58,7 +58,7 @@ def main():
 
     # Initialize both games
     clicker = ClickerGame(display, state=save_data.get('clicker'))
-    zombie = ZombieShooterGame(display, owned_pets=clicker.owned_pets)
+    zombie = ZombieShooterGame(display, owned_pets=clicker.owned_pets, state=save_data.get('zombie'))
 
     current_game = "menu"
     menu_selection = 0
@@ -109,13 +109,15 @@ def main():
                 elif current_game == "clicker":
                     if i == 6: # CTRL
                         current_game = "menu"; gc.collect(); show_main_menu()
-                    elif i == 0: clicker.click() if clicker.current_screen == 0 else clicker.buy_upgrade(0)
+                    elif i == 0: clicker.click() if clicker.current_screen == 0 else (clicker.buy_upgrade(0) if clicker.current_screen == 1 else None)
                     elif i == 1: clicker.buy_upgrade(1) if clicker.current_screen == 1 else (clicker.pull_gacha("premium") if clicker.current_screen == 2 else None)
                     elif i == 4: clicker.prev_screen()
                     elif i == 5: clicker.next_screen()
                     elif i == 7: # X
                         if clicker.current_screen == 1: clicker.buy_upgrade(2)
                         elif clicker.current_screen == 2: clicker.pull_gacha("ultra")
+                    elif i == 8: # Y
+                        if clicker.current_screen == 2: clicker.pull_gacha("basic")
 
                 elif current_game == "zombie":
                     if i == 6: # CTRL
@@ -127,10 +129,10 @@ def main():
                     elif i == 1:
                         if zombie.show_menu: zombie.buy_upgrade("fire_rate")
                         else: zombie.toggle_menu()
-                    elif i == 2: zombie.move_up() if not zombie.show_menu else zombie.craft("medkit")
-                    elif i == 3: zombie.move_down() if not zombie.show_menu else zombie.craft("ammo")
-                    elif i == 4: zombie.move_left()
-                    elif i == 5: zombie.move_right()
+                    elif i == 2:
+                        if zombie.show_menu: zombie.craft("medkit")
+                    elif i == 3:
+                        if zombie.show_menu: zombie.craft("ammo")
                     elif i == 7: # X
                         if zombie.show_menu: zombie.craft("barricade")
 
@@ -138,6 +140,11 @@ def main():
 
         if current_game == "clicker": clicker.update()
         elif current_game == "zombie":
+            if not zombie.show_menu and not zombie.game_over:
+                if not btns[2].value: zombie.move_up()
+                if not btns[3].value: zombie.move_down()
+                if not btns[4].value: zombie.move_left()
+                if not btns[5].value: zombie.move_right()
             zombie.update()
             zombie.render()
 
