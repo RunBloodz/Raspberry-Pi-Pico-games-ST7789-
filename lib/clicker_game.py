@@ -53,8 +53,9 @@ ACHIEVEMENTS = [
 ]
 
 class ClickerGame:
-    def __init__(self, display, state=None):
+    def __init__(self, display, state=None, speaker=None):
         self.display = display
+        self.speaker = speaker
         self.group = displayio.Group()
         self.labels = {}
 
@@ -143,6 +144,7 @@ class ClickerGame:
         self.combo = min(self.combo + 1, 50)
         self.combo_mult = 1.0 + (self.combo * 0.1)
         self.last_click_time = time.monotonic()
+        if self.speaker: self.speaker.play_click()
         self.check_achievements()
         self.update_labels_only()
 
@@ -165,6 +167,7 @@ class ClickerGame:
             self.upgrades[i] += 1
             self.cps += self.upgrade_cps[i]
             self.upgrade_costs[i] = int(self.upgrade_costs[i] * 1.5)
+            if self.speaker: self.speaker.play_buy()
             self.update_labels_only()
 
     def pull_gacha(self, tier):
@@ -181,6 +184,7 @@ class ClickerGame:
         new_pet = {"name": pet_data["name"], "emoji": pet_data["emoji"], "mult": pet_data["mult"], "rarity": rarity, "color": pet_data["color"]}
         self.owned_pets.append(new_pet)
         self.total_multiplier = self.calculate_multiplier()
+        if self.speaker: self.speaker.play_buy()
         self.render_screen()
         return new_pet
 

@@ -55,10 +55,13 @@ def main():
 
     from lib.clicker_game import ClickerGame
     from lib.zombie_game import ZombieShooterGame
+    from lib.audio import Speaker
+
+    speaker = Speaker(pin=board.GP14)
 
     # Initialize both games
-    clicker = ClickerGame(display, state=save_data.get('clicker'))
-    zombie = ZombieShooterGame(display, owned_pets=clicker.owned_pets, state=save_data.get('zombie'))
+    clicker = ClickerGame(display, state=save_data.get('clicker'), speaker=speaker)
+    zombie = ZombieShooterGame(display, owned_pets=clicker.owned_pets, state=save_data.get('zombie'), speaker=speaker)
 
     current_game = "menu"
     menu_selection = 0

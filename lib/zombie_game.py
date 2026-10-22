@@ -5,8 +5,9 @@ import terminalio
 from adafruit_display_text import label
 
 class ZombieShooterGame:
-    def __init__(self, display, owned_pets=None, state=None):
+    def __init__(self, display, owned_pets=None, state=None, speaker=None):
         self.display = display
+        self.speaker = speaker
         self.owned_pets = owned_pets if owned_pets else []
 
         self.player_x = 120
@@ -132,10 +133,13 @@ class ZombieShooterGame:
             for b in self.bullets[:]:
                 if abs(b["x"]-z["x"]) < 10 and abs(b["y"]-z["y"]) < 10:
                     z["health"] -= self.damage; self.bullets.remove(b)
+                    if self.speaker: self.speaker.play_hit()
                     if z["health"] <= 0: self.money += z["worth"]; self.score += z["worth"]; self.zombies.remove(z)
                     break
         if self.zombies_to_spawn == 0 and not self.zombies: self.end_wave()
-        if self.player_health <= 0: self.game_over = True
+        if self.player_health <= 0:
+            if not self.game_over and self.speaker: self.speaker.play_game_over()
+            self.game_over = True
 
     def shoot(self):
         if self.ammo <= 0 or self.show_menu: return
@@ -147,6 +151,7 @@ class ZombieShooterGame:
                 dist = (ndx**2 + ndy**2)**0.5
                 if dist > 0: dx, dy = ndx/dist, ndy/dist
             self.bullets.append({"x": self.player_x, "y": self.player_y, "dx": dx, "dy": dy}); self.last_shot = t
+            if self.speaker: self.speaker.play_shoot()
 
     def toggle_menu(self):
         self.show_menu = not self.show_menu
@@ -164,6 +169,7 @@ class ZombieShooterGame:
             for res, amt in r.items(): setattr(self, res, getattr(self, res)-amt)
             if k == "medkit": self.player_health = min(self.max_health, self.player_health+30)
             elif k == "ammo": self.ammo += 20
+            if self.speaker: self.speaker.play_buy()
             self.toggle_menu(); self.toggle_menu()
 
     def buy_upgrade(self, k):
@@ -172,12 +178,14 @@ class ZombieShooterGame:
             self.money -= c
             if k == "damage": self.damage += 1
             elif k == "fire_rate": self.fire_rate *= 0.9
-            self.upgrade_costs[k] = int(c*1.5); self.toggle_menu(); self.toggle_menu()
+            self.upgrade_costs[k] = int(c*1.5)
+            if self.speaker: self.speaker.play_buy()
+            self.toggle_menu(); self.toggle_menu()
 
     def move_up(self): self.player_y = max(10, self.player_y - self.move_speed)
     def move_down(self): self.player_y = min(230, self.player_y + self.move_speed)
     def move_left(self): self.player_x = max(10, self.player_x - self.move_speed)
     def move_right(self): self.player_x = min(230, self.player_x + self.move_speed)
     def restart(self):
-        self.__init__(self.display, self.owned_pets)
+        self.__init__(self.display, self.owned_pets, speaker=self.speaker)
         self.display.root_group = self.root_group
