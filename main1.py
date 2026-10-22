@@ -57,7 +57,7 @@ def main():
     from lib.zombie_game import ZombieShooterGame
     from lib.audio import Speaker
 
-    speaker = Speaker(pin=board.GP14)
+    speaker = Speaker()
 
     # Initialize both games
     clicker = ClickerGame(display, state=save_data.get('clicker'), speaker=speaker)
